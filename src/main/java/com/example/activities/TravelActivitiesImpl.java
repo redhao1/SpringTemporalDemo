@@ -1,6 +1,6 @@
-package com.javatechie.activities;
+package com.example.activities;
 
-import com.javatechie.dto.TravelRequest;
+import com.example.dto.TravelRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -48,7 +48,7 @@ public class TravelActivitiesImpl implements TravelActivities {
                 travelRequest.getDestination(),
                 travelRequest.getTravelDate());
 
-        //simulate a failure to demonstrate compensation
+        //simulate a failure to demonstrate compensation, in this method
        throw new RuntimeException("Simulated transport arrangement failure!");
     }
 

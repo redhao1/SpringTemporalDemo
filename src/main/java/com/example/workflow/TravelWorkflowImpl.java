@@ -1,7 +1,7 @@
-package com.javatechie.workflow;
+package com.example.workflow;
 
-import com.javatechie.activities.TravelActivities;
-import com.javatechie.dto.TravelRequest;
+import com.example.activities.TravelActivities;
+import com.example.dto.TravelRequest;
 import io.temporal.activity.ActivityOptions;
 import io.temporal.common.RetryOptions;
 import io.temporal.workflow.Saga;
@@ -68,7 +68,8 @@ public class TravelWorkflowImpl implements TravelWorkflow {
 
             if (!isConfirmed) {
                 log.info("🛑 User did not confirm within 2 minutes, cancelling the booking for user: {}", travelRequest.getUserId());
-                //cancel the booking
+                //roll back the individually booked legs, then cancel the overall booking
+                saga.compensate();
                 activities.cancelBooking(travelRequest);
             } else {
                 log.info("✅ User confirmed the booking: {}", travelRequest.getUserId());

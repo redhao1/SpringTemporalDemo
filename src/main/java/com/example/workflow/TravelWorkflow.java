@@ -1,6 +1,6 @@
-package com.javatechie.workflow;
+package com.example.workflow;
 
-import com.javatechie.dto.TravelRequest;
+import com.example.dto.TravelRequest;
 import io.temporal.workflow.SignalMethod;
 import io.temporal.workflow.WorkflowInterface;
 import io.temporal.workflow.WorkflowMethod;

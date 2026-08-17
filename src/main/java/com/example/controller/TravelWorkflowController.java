@@ -1,7 +1,7 @@
-package com.javatechie.controller;
+package com.example.controller;
 
-import com.javatechie.dto.TravelRequest;
-import com.javatechie.starter.TravelBookingWorkflowStarter;
+import com.example.dto.TravelRequest;
+import com.example.starter.TravelBookingWorkflowStarter;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,7 +24,7 @@ public class TravelWorkflowController {
 
     // Endpoint to confirm the booking by sending a signal to the workflow
     @PostMapping("/confirm/{userId}")
-    public ResponseEntity<String> confirmBooking(@RequestParam String userId) {
+    public ResponseEntity<String> confirmBooking(@PathVariable String userId) {
         starter.sendConfirmationSignal(userId);
         return ResponseEntity.ok("✅ Booking confirmed by user!");
     }

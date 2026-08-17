@@ -1,6 +1,6 @@
-package com.javatechie.activities;
+package com.example.activities;
 
-import com.javatechie.dto.TravelRequest;
+import com.example.dto.TravelRequest;
 import io.temporal.activity.ActivityInterface;
 
 @ActivityInterface
