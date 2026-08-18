@@ -29,5 +29,17 @@ public class TravelWorkflowController {
         return ResponseEntity.ok("✅ Booking confirmed by user!");
     }
 
+    // Endpoint to query the current status of the booking workflow
+    @GetMapping("/status/{userId}")
+    public ResponseEntity<String> getBookingStatus(@PathVariable String userId) {
+        return ResponseEntity.ok(starter.getBookingStatus(userId));
+    }
+
+    // Endpoint to update the travel date of an in-flight booking workflow
+    @PutMapping("/date/{userId}")
+    public ResponseEntity<String> updateTravelDate(@PathVariable String userId, @RequestBody String newDate) {
+        starter.updateTravelDate(userId, newDate);
+        return ResponseEntity.ok("📝 Travel date updated for user: " + userId);
+    }
 
 }

@@ -42,4 +42,22 @@ public class TravelBookingWorkflowStarter {
 
         workflow.sendConfirmationSignal();
     }
+
+    public String getBookingStatus(String userId) {
+        WorkflowClient client = WorkflowClient.newInstance(serviceStubs);
+
+        String workflowId = "travel_" + userId;
+        TravelWorkflow workflow = client.newWorkflowStub(TravelWorkflow.class, workflowId);
+
+        return workflow.getBookingStatus();
+    }
+
+    public void updateTravelDate(String userId, String newDate) {
+        WorkflowClient client = WorkflowClient.newInstance(serviceStubs);
+
+        String workflowId = "travel_" + userId;
+        TravelWorkflow workflow = client.newWorkflowStub(TravelWorkflow.class, workflowId);
+
+        workflow.updateTravelDate(newDate);
+    }
 }

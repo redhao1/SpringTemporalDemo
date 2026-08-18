@@ -11,6 +11,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -110,5 +111,17 @@ class TravelWorkflowImplTest {
         verify(activities).cancelTransport(request);
         verify(activities).cancelBooking(request);
         verify(activities, never()).confirmBooking(any());
+    }
+
+    @Test
+    void queryReturnsConfirmedStatusAfterUserConfirms() {
+        TravelRequest request = new TravelRequest("user-4", "Madrid", "2026-12-01");
+
+        TravelWorkflow workflow = newWorkflowStub();
+        WorkflowClient.start(workflow::bookTrip, request);
+        workflow.sendConfirmationSignal();
+        WorkflowStub.fromTyped(workflow).getResult(Void.class);
+
+        assertEquals("CONFIRMED", workflow.getBookingStatus());
     }
 }
