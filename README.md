@@ -10,6 +10,8 @@ Once all three legs are booked, the workflow waits up to 2 minutes for a user co
 - If confirmed in time, the booking is confirmed.
 - If not confirmed (or a step fails), the booking is cancelled and the already-booked legs are compensated via the Saga.
 
+At any point you can check progress with `GET /travel/status/{userId}` (a Temporal Query), or change the travel date on an in-flight booking with `PUT /travel/date/{userId}` (a Temporal Update) — the update is rejected once the booking has been confirmed or cancelled.
+
 The app is both a Spring Boot web server and a Temporal worker running in the same process — the worker registers the workflow/activities and starts polling on startup.
 
 ## Prerequisites
@@ -42,6 +44,8 @@ Useful local endpoints:
 |---|---|---|
 | `POST` | `/travel/book` | Starts a new trip-booking workflow for the given `TravelRequest` (`userId`, `destination`, `travelDate`) |
 | `POST` | `/travel/confirm/{userId}` | Sends a confirmation signal to the running workflow for that user |
+| `GET` | `/travel/status/{userId}` | Queries the current booking status (`BOOKING_FLIGHT`, `AWAITING_CONFIRMATION`, `CONFIRMED`, `CANCELLED`, etc.) |
+| `PUT` | `/travel/date/{userId}` | Updates the travel date on an in-flight booking (body: new date string); rejected once confirmed or cancelled |
 
 Workflow IDs are deterministic (`"travel_" + userId`), so only one active booking can be in flight per user at a time.
 
@@ -60,6 +64,6 @@ mvn test -Dgroups=integration
 ## Tech stack
 
 - Spring Boot 3.5.4 (Java 17)
-- Temporal Java SDK 1.22.2
+- Temporal Java SDK 1.22.2, Temporal server `1.27.2` (via docker-compose)
 - springdoc-openapi (Swagger UI)
 - JUnit 5, Mockito, Temporal `temporal-testing`

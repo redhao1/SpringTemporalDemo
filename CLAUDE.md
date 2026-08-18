@@ -27,15 +27,19 @@ Swagger/OpenAPI UI (springdoc is on the classpath): `http://localhost:9191/swagg
 This app is both a Spring Boot web server (REST endpoints under `/travel`) and a Temporal worker, started in the same process:
 
 - `TemporalConfig` (`config/`) builds `WorkflowServiceStubs`, creates a `WorkerFactory`/`Worker` bound to the `temporal.task-queue` value (`application.properties` → `TRAVEL_TASK_QUEUE`), registers `TravelWorkflowImpl` and `TravelActivities`, and starts the worker via `@PostConstruct`.
-- `TravelWorkflowController` (`controller/`) exposes two endpoints:
+- `TravelWorkflowController` (`controller/`) exposes four endpoints:
   - `POST /travel/book` — starts a new workflow execution via `TravelBookingWorkflowStarter`.
   - `POST /travel/confirm/{userId}` — sends a signal to the running workflow instance for that user.
-- `TravelBookingWorkflowStarter` (`starter/`) creates workflow stubs (`WorkflowClient.newWorkflowStub`) to start workflows and deliver signals. Workflow IDs are deterministic: `"travel_" + userId`, which is how the starter re-attaches to an existing execution to send a signal.
-- `TravelWorkflow` / `TravelWorkflowImpl` (`workflow/`) define the workflow interface (`@WorkflowMethod bookTrip`, `@SignalMethod sendConfirmationSignal`) and its implementation, which is the core orchestration logic:
-  1. Books flight, hotel, and transport sequentially via activity stubs, each retryable (max 3 attempts, 10s start-to-close timeout).
+  - `GET /travel/status/{userId}` — queries the running (or recently-closed) workflow's current booking status.
+  - `PUT /travel/date/{userId}` — sends an Update to change the travel date on an in-flight booking; body is the new date string.
+- `TravelBookingWorkflowStarter` (`starter/`) creates workflow stubs (`WorkflowClient.newWorkflowStub`) to start workflows and deliver signals/queries/updates. Workflow IDs are deterministic: `"travel_" + userId`, which is how the starter re-attaches to an existing execution to send a signal, run a query, or send an update.
+- `TravelWorkflow` / `TravelWorkflowImpl` (`workflow/`) define the workflow interface (`@WorkflowMethod bookTrip`, `@SignalMethod sendConfirmationSignal`, `@QueryMethod getBookingStatus`, `@UpdateMethod updateTravelDate` + its `@UpdateValidatorMethod`) and its implementation, which is the core orchestration logic:
+  1. Books flight, hotel, and transport sequentially via activity stubs, each retryable (max 3 attempts, 10s start-to-close timeout). A `currentStatus` field is updated at each phase (`BOOKING_FLIGHT` → `BOOKING_HOTEL` → `ARRANGING_TRANSPORT` → `AWAITING_CONFIRMATION` → `CONFIRMED`/`CANCELLED`) and is what `getBookingStatus()` returns.
   2. Registers a Temporal `Saga` compensation for each successful booking step (cancel flight/hotel/transport) so a later failure unwinds prior steps in reverse.
   3. `Workflow.await(Duration, ...)` blocks up to 2 minutes for the `isUserConfirmed` flag to flip via the signal; on timeout, it rolls back the booked legs via `saga.compensate()` and then cancels the booking, otherwise it confirms it.
   4. Any exception during the booking steps also triggers `saga.compensate()`.
+  5. `updateTravelDate(newDate)` mutates the in-memory `TravelRequest`'s travel date; its paired validator method rejects the update (throws `IllegalStateException`) once `currentStatus` is `CONFIRMED` or `CANCELLED`.
+  6. Before returning, `bookTrip` calls `Workflow.sleep(Duration.ofSeconds(30))` — this is demo-only, simulating trailing wrap-up work so the workflow execution stays open long enough after reaching a terminal status to demonstrate the Update validator rejecting a live call. Without it, the workflow method returns (closing the execution) almost immediately after the terminal status is set.
 - `TravelActivities` / `TravelActivitiesImpl` (`activities/`) are the individual booking/cancellation operations (currently simulated with logging, no real external calls). Note: `arrangeTransport` deliberately throws a `RuntimeException` to demonstrate the Saga compensation path — this is intentional demo behavior, not a bug.
 - `TravelRequest` (`dto/`) is the plain data payload (`userId`, `destination`, `travelDate`) passed between the controller, starter, workflow, and activities.
 
