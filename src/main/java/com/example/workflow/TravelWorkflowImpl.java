@@ -116,8 +116,8 @@ public class TravelWorkflowImpl implements TravelWorkflow {
 
         // Simulates ongoing work so the workflow stays open for a bit after reaching a terminal
         // status
-        log.info("🕒 Finalizing booking records for user: {}...", travelRequest.getUserId());
-        Workflow.sleep(Duration.ofSeconds(30));
+        log.info("🕒 Simulating ongoing booking process for user: {}...", travelRequest.getUserId());
+        Workflow.sleep(Duration.ofSeconds(60));
 
         log.info("✅ Travel booking completed for user: {}", travelRequest.getUserId());
 
