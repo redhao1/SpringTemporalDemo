@@ -49,7 +49,7 @@ public class TravelActivitiesImpl implements TravelActivities {
                 travelRequest.getTravelDate());
 
         //simulate a failure to demonstrate compensation, in this method
-       throw new RuntimeException("Simulated transport arrangement failure!");
+//       throw new RuntimeException("Simulated transport arrangement failure!");
     }
 
     @Override

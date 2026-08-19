@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 
-@Service
+//@Service
 @Slf4j
 public class TravelWorkflowImpl implements TravelWorkflow {
 
@@ -23,7 +23,7 @@ public class TravelWorkflowImpl implements TravelWorkflow {
 
     private TravelRequest travelRequest;
 
-    @SignalMethod
+    @Override
     public void sendConfirmationSignal() {
         log.info("📩 Received user confirmation signal.");
         isUserConfirmed = true;
